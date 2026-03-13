@@ -1,0 +1,309 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 43 55% 54%;
+    --primary-foreground: 0 0% 4%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 43 55% 54%;
+    --accent-foreground: 0 0% 4%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 43 55% 54% / 0.3;
+    --input: 0 0% 15%;
+    --ring: 43 55% 54%;
+    --radius: 0rem;
+    
+    /* Barbershop SEZER 13 colors - Dark theme with Gold accents */
+    --sezer-black: #0A0A0A;
+    --sezer-charcoal: #1E1E1E;
+    --sezer-gold: #C9A24D;
+    --sezer-gold-light: #D4B76A;
+    --sezer-grey: #8c8c91;
+    --sezer-white: #f0f0f0;
+  }
+
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    scroll-behavior: auto;
+  }
+  
+  html.lenis, html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+
+  .lenis.lenis-scrolling iframe {
+    pointer-events: none;
+  }
+  
+  body {
+    @apply bg-[#0A0A0A] text-white antialiased;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+  
+  ::selection {
+    background: rgba(201, 162, 77, 0.4);
+    color: inherit;
+  }
+}
+
+@layer components {
+  .sezer-headline {
+    @apply font-semibold tracking-tight leading-none;
+    font-family: 'Playfair Display', serif;
+  }
+  
+  .sezer-body {
+    @apply font-light leading-relaxed;
+    line-height: 1.7;
+  }
+  
+  .sezer-label {
+    @apply text-xs uppercase tracking-widest font-medium;
+    letter-spacing: 0.2em;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .border-sezer {
+    border-color: rgba(201, 162, 77, 0.3);
+  }
+  
+  .border-sezer-gold {
+    border-color: var(--sezer-gold);
+  }
+  
+  .text-gold {
+    color: var(--sezer-gold);
+  }
+  
+  .bg-gold {
+    background-color: var(--sezer-gold);
+  }
+  
+  .clip-reveal {
+    clip-path: inset(0 0 100% 0);
+  }
+  
+  .clip-reveal-active {
+    clip-path: inset(0 0 0% 0);
+    transition: clip-path 1.2s cubic-bezier(0.77, 0, 0.175, 1);
+  }
+  
+  /* Gold button styles */
+  .btn-gold {
+    @apply px-8 py-4 border-2 border-[#C9A24D] text-[#C9A24D] uppercase tracking-widest text-sm font-medium transition-all duration-300;
+    background: transparent;
+  }
+  
+  .btn-gold:hover {
+    background: #C9A24D;
+    color: #0A0A0A;
+  }
+  
+  .btn-gold-filled {
+    @apply px-8 py-4 bg-[#C9A24D] text-[#0A0A0A] uppercase tracking-widest text-sm font-medium transition-all duration-300;
+  }
+  
+  .btn-gold-filled:hover {
+    background: #D4B76A;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(201, 162, 77, 0.3);
+  }
+}
+
+@layer utilities {
+  .text-shadow-sezer {
+    text-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  }
+  
+  .will-change-transform {
+    will-change: transform;
+  }
+  
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+  
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .gpu-accelerate {
+    transform: translateZ(0);
+  }
+  
+  .gold-glow {
+    box-shadow: 0 0 30px rgba(201, 162, 77, 0.3);
+  }
+}
+
+/* Custom cursor styles */
+.custom-cursor {
+  position: fixed;
+  width: 12px;
+  height: 12px;
+  background: #C9A24D;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+  transition: transform 0.15s ease-out, width 0.2s ease, height 0.2s ease;
+  transform: translate(-50%, -50%);
+}
+
+.custom-cursor.hover {
+  width: 40px;
+  height: 40px;
+}
+
+/* Marquee animation */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+/* Section transitions */
+.section-dark {
+  background-color: #0A0A0A;
+}
+
+.section-charcoal {
+  background-color: #1E1E1E;
+}
+
+.section-grey {
+  background-color: #8c8c91;
+}
+
+/* Smooth opacity transitions */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.fade-in-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+/* Stagger delay utilities */
+.stagger-1 { transition-delay: 0.1s; }
+.stagger-2 { transition-delay: 0.2s; }
+.stagger-3 { transition-delay: 0.3s; }
+.stagger-4 { transition-delay: 0.4s; }
+.stagger-5 { transition-delay: 0.5s; }
+
+/* Image reveal animation */
+.img-reveal {
+  position: relative;
+  overflow: hidden;
+}
+
+.img-reveal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #0A0A0A;
+  transform: scaleY(1);
+  transform-origin: top;
+  transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.img-reveal.revealed::after {
+  transform: scaleY(0);
+  transform-origin: bottom;
+}
+
+/* Sticky gallery styles */
+.sticky-gallery {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+/* Hide default scrollbar for cleaner look */
+::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+/* Star rating styles */
+.star-rating {
+  color: #C9A24D;
+}
+
+/* Gold underline animation */
+.gold-underline {
+  position: relative;
+}
+
+.gold-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #C9A24D;
+  transition: width 0.3s ease;
+}
+
+.gold-underline:hover::after {
+  width: 100%;
+}
+
+/* Service card hover effect */
+.service-card {
+  @apply transition-all duration-300;
+  border: 1px solid rgba(201, 162, 77, 0.2);
+}
+
+.service-card:hover {
+  border-color: rgba(201, 162, 77, 0.6);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Portfolio card overlay */
+.portfolio-overlay {
+  background: linear-gradient(to top, rgba(10, 10, 10, 0.9) 0%, transparent 100%);
+}

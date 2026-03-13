@@ -1,0 +1,45 @@
+// 1. Generator (ONLY ONE)
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 2. Datasource (ONLY ONE)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 3. Models (The rest of your file...)
+model Barber {
+  id           Int      @id @default(autoincrement())
+  name         String
+  photo        String
+  specialties  String[]
+  workingHours Json
+  reservations Reservation[]
+}
+
+model Service {
+  id              Int      @id @default(autoincrement())
+  name            String
+  durationMinutes Int
+  price           Float
+  reservations    Reservation[]
+}
+
+model Reservation {
+  id          Int      @id @default(autoincrement())
+  clientName  String
+  clientPhone String
+  barberId    Int
+  serviceId   Int
+  date        DateTime
+  startTime   String
+  endTime     String
+  status      String   @default("booked")
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  barber      Barber   @relation(fields: [barberId], references: [id])
+  service     Service  @relation(fields: [serviceId], references: [id])
+}
