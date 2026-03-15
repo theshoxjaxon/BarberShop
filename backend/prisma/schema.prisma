@@ -36,10 +36,13 @@ model Reservation {
   date        DateTime
   startTime   String
   endTime     String
-  status      String   @default("booked")
+  status      String   @default("booked") // 'booked', 'confirmed', 'cancelled'
   notes       String?
   createdAt   DateTime @default(now())
 
   barber      Barber   @relation(fields: [barberId], references: [id])
   service     Service  @relation(fields: [serviceId], references: [id])
+
+
+  @@unique([barberId, date, startTime])
 }

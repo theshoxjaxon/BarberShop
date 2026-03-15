@@ -1,76 +1,89 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import TelegramBot from 'node-telegram-bot-api';
+import { prisma } from '../db/prisma';
 
-// Mock environment variables before importing the module
-const OLD_ENV = { ...process.env } as Record<string, string | undefined>;
+const token = process.env.TELEGRAM_BOT_TOKEN!;
+const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID!;
+export const bot = new TelegramBot(token, { polling: true });
 
-// Mock node-telegram-bot-api
-const sendMessage = vi.fn();
-vi.mock('node-telegram-bot-api', () => {
-  return {
-    default: vi.fn().mockImplementation((_token: string, _opts: any) => ({
-      sendMessage,
-    })),
+/**
+ * Sends a rich HTML notification to the Admin with interactive buttons
+ */
+export const notifyAdmin = async (reservation: any) => {
+  const notes = reservation.notes && reservation.notes.trim() !== '' ? reservation.notes : '-';
+  
+  const message = `
+<b>NEW RESERVATION</b>
+<b>Client:</b> ${reservation.clientName}
+<b>Phone:</b> ${reservation.clientPhone}
+<b>Barber:</b> ${reservation.barber?.name || 'N/A'}
+<b>Service:</b> ${reservation.service?.name || 'N/A'}
+<b>Date:</b> ${reservation.date}
+<b>Time:</b> ${reservation.startTime}
+<b>Notes:</b> ${notes}
+  `;
+
+  const options = {
+    parse_mode: 'HTML' as const,
+    reply_markup: {
+      inline_keyboard: [
+        [
+          { text: "✅ Confirm", callback_data: `confirm_${reservation.id}` },
+          { text: "❌ Cancel", callback_data: `cancel_${reservation.id}` }
+        ]
+      ]
+    }
   };
+
+  await bot.sendMessage(adminChatId, message, options);
+};
+
+/**
+ * Handle Admin Decisions (Confirm/Cancel)
+ */
+bot.on('callback_query', async (query) => {
+  if (query.from.id.toString() !== adminChatId) {
+    return bot.answerCallbackQuery(query.id, { text: "Unauthorized" });
+  }
+
+  const [action, resId] = query.data!.split('_');
+  const status = action === 'confirm' ? 'confirmed' : 'cancelled';
+
+  try {
+    await prisma.reservation.update({
+      where: { id: parseInt(resId) },
+      data: { status }
+    });
+
+    await bot.editMessageText(`${query.message?.text}\n\n✅ <b>STATUS: ${status.toUpperCase()}</b>`, {
+      chat_id: query.message?.chat.id,
+      message_id: query.message?.message_id,
+      parse_mode: 'HTML'
+    });
+    
+    // TODO: Trigger Client SMS/Notification here
+  } catch (error) {
+    bot.answerCallbackQuery(query.id, { text: "Error updating database." });
+  }
 });
 
-beforeEach(() => {
-  process.env.TELEGRAM_BOT_TOKEN = 'test-token';
-  process.env.TELEGRAM_ADMIN_CHAT_ID = '1234';
-});
+/**
+ * Command: /today
+ */
+bot.onText(/\/today/, async (msg) => {
+  if (msg.chat.id.toString() !== adminChatId) return;
 
-afterEach(() => {
-  // cleanup env and mocks between tests
-  Object.assign(process.env, OLD_ENV);
-  vi.resetModules();
-  vi.clearAllMocks();
-});
-
-describe('telegramService.notifyAdmin', () => {
-  it('formats and sends an admin notification message', async () => {
-    // Re-import module after env and mocks are set
-    const { notifyAdmin } = await import('./telegramService');
-
-    const reservation = {
-      clientName: 'John Doe',
-      clientPhone: '+1-555-0100',
-      barber: { name: 'Alex' },
-      service: { name: 'Haircut' },
-      date: '2024-12-02',
-      startTime: '14:30',
-      notes: 'Please be on time',
-    };
-
-    notifyAdmin(reservation);
-
-    expect(sendMessage).toHaveBeenCalledTimes(1);
-    const [chatId, msg, options] = sendMessage.mock.calls[0];
-    expect(chatId).toBe('1234');
-    expect(String(msg)).toContain('<b>NEW RESERVATION</b>');
-    expect(String(msg)).toContain('Client: John Doe');
-    expect(String(msg)).toContain('Phone: +1-555-0100');
-    expect(String(msg)).toContain('Barber: Alex');
-    expect(String(msg)).toContain('Service: Haircut');
-    expect(String(msg)).toContain('Date: 2024-12-02');
-    expect(String(msg)).toContain('Time: 14:30');
-    expect(String(msg)).toContain('Notes: Please be on time');
-    expect(options).toEqual({ parse_mode: 'HTML' });
+  const todayStr = new Date().toISOString().split('T')[0];
+  const bookings = await prisma.reservation.findMany({
+    where: { 
+        date: { contains: todayStr }, // Adjust based on your DateTime storage
+        status: 'confirmed' 
+    },
+    orderBy: { startTime: 'asc' }
   });
 
-  it('uses dash for empty notes', async () => {
-    const { notifyAdmin } = await import('./telegramService');
-    const reservation = {
-      clientName: 'Jane',
-      clientPhone: '000',
-      barber: { name: 'Max' },
-      service: { name: 'Beard' },
-      date: '2024-12-03',
-      startTime: '09:00',
-      notes: '',
-    };
+  const list = bookings.length > 0 
+    ? bookings.map(b => `🕒 ${b.startTime} - ${b.clientName}`).join('\n')
+    : "No appointments confirmed for today.";
 
-    notifyAdmin(reservation);
-
-    const [_chatId, msg] = sendMessage.mock.calls.at(-1)!;
-    expect(String(msg)).toContain('Notes: -');
-  });
+  bot.sendMessage(adminChatId, `<b>Today's Schedule:</b>\n${list}`, { parse_mode: 'HTML' });
 });

@@ -40,22 +40,28 @@ export default async function (fastify: FastifyInstance) {
     const endMins = (endAsMinutes % 60).toString().padStart(2, '0');
     const endTime = `${endHours}:${endMins}`;
 
-    const reservation = await prisma.reservation.create({
-      data: {
-        clientName: body.data.name,
-        clientPhone: body.data.phone,
-        barberId: body.data.barberId,
-        serviceId: body.data.serviceId,
-        date: new Date(body.data.date),
-        startTime: body.data.time,
-        endTime: endTime, // Now this is a valid string
-        status: 'booked',
-        notes: body.data.notes
-      },
-      include: { barber: true, service: true }
-    });
-
-    notifyAdmin(reservation);
-    return { success: true, reservation };
+    try {
+      const reservation = await prisma.reservation.create({
+        data: {
+          clientName: body.data.name,
+          clientPhone: body.data.phone,
+          barberId: body.data.barberId,
+          serviceId: body.data.serviceId,
+          date: new Date(body.data.date),
+          startTime: body.data.time,
+          endTime: endTime, // Now this is a valid string
+          status: 'booked',
+          notes: body.data.notes
+        },
+        include: { barber: true, service: true }
+      });
+      notifyAdmin(reservation);
+      return { success: true, reservation };
+    } catch (err: any) {
+      if (err.code === 'P2002') {
+        return reply.status(409).send({ error: 'Slot already booked' });
+      }
+      return reply.status(500).send({ error: 'Internal server error' });
+    }
   });
 }
