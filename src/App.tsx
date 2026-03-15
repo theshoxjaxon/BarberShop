@@ -18,6 +18,7 @@ import Collections from './sections/Collections';
 import Testimonials from './sections/Testimonials';
 import Visit from './sections/Visit';
 import Footer from './sections/Footer';
+import { BookingModal } from './components/BookingModal';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -87,6 +88,9 @@ function App() {
 
   return (
     <div ref={mainRef} className="relative">
+      <div className="fixed bottom-8 right-8 z-50">
+        <BookingModal />
+      </div>
       {/* Hero Section */}
       <div id="hero-section">
         <Hero />
