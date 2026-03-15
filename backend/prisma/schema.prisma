@@ -16,6 +16,7 @@ model Barber {
   photo        String
   specialties  String[]
   workingHours Json
+  yearsExperience Int
   reservations Reservation[]
 }
 
